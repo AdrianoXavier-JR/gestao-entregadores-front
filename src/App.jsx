@@ -12,7 +12,6 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "./App.css";
 
-// Caminho relativo do ícone (sem "public")
 const entregadorIcon = new L.Icon({
   iconUrl: "/Entregador.png",
   iconSize: [40, 40],
@@ -28,6 +27,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
+
 function MoveMap({ center }) {
   const map = useMap();
 
@@ -35,12 +35,11 @@ function MoveMap({ center }) {
     map.setView(center);
     setTimeout(() => {
       map.invalidateSize();
-    }, 100); // Pequeno delay ajuda a forçar o ajuste
+    }, 100);
   }, [center, map]);
 
   return null;
 }
-
 
 function AnimatedMarker({ position, entregador }) {
   const markerRef = useRef();
@@ -65,6 +64,46 @@ function App() {
   const [posicaoAtual, setPosicaoAtual] = useState(null);
   const [pontosRota, setPontosRota] = useState([]);
   const [verdeCoords, setVerdeCoords] = useState([]);
+
+  // ROTAS MOCKADAS
+  const rotasMockadas = [
+    [
+      { id: 1, latitude: -23.560, longitude: -46.650, ordem: 1 },
+      { id: 2, latitude: -23.561, longitude: -46.651, ordem: 2 },
+      { id: 3, latitude: -23.562, longitude: -46.652, ordem: 3 },
+      { id: 4, latitude: -23.563, longitude: -46.653, ordem: 4 },
+    ],
+    [
+      { id: 1, latitude: -23.55052, longitude: -46.63331, ordem: 1 },
+      { id: 2, latitude: -23.545, longitude: -46.62, ordem: 2 },
+      { id: 3, latitude: -23.54, longitude: -46.61, ordem: 3 },
+      { id: 4, latitude: -23.535, longitude: -46.60, ordem: 4 },
+      { id: 5, latitude: -23.53, longitude: -46.59, ordem: 5 },
+    ],
+    [
+      { id: 1, latitude: -23.580, longitude: -46.670, ordem: 1 },
+      { id: 2, latitude: -23.575, longitude: -46.665, ordem: 2 },
+      { id: 3, latitude: -23.570, longitude: -46.660, ordem: 3 },
+      { id: 4, latitude: -23.565, longitude: -46.655, ordem: 4 },
+    ],
+  ];
+
+  const rotaIndexRef = useRef(0);
+
+  function simularNovaEntrega() {
+    rotaIndexRef.current = (rotaIndexRef.current + 1) % rotasMockadas.length;
+    const novaRota = rotasMockadas[rotaIndexRef.current];
+
+    setPontosRota(novaRota);
+
+    const novaPosicaoInicial = {
+      lat: novaRota[0].latitude,
+      lng: novaRota[0].longitude,
+    };
+
+    setPosicaoAtual(novaPosicaoInicial);
+    setVerdeCoords([[novaPosicaoInicial.lat, novaPosicaoInicial.lng]]);
+  }
 
   useEffect(() => {
     async function fetchEntregador() {
@@ -136,36 +175,42 @@ function App() {
   const rotaCoords = pontosRota.map((p) => [p.latitude, p.longitude]);
 
   return (
-    <MapContainer
-      center={[posicaoAtual.lat, posicaoAtual.lng]}
-      zoom={15}
-      style={{ height: "100vh", width: "100%" }}
-    >
-      <MoveMap center={[posicaoAtual.lat, posicaoAtual.lng]} />
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+    <>
+      <button onClick={simularNovaEntrega} className="nova-entrega">
+        Nova entrega
+      </button>
 
-      <AnimatedMarker position={posicaoAtual} entregador={entregador} />
+      <MapContainer
+        center={[posicaoAtual.lat, posicaoAtual.lng]}
+        zoom={15}
+        style={{ height: "100vh", width: "100%" }}
+      >
+        <MoveMap center={[posicaoAtual.lat, posicaoAtual.lng]} />
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-      {pontosRota.map((p, i) => (
-        <Marker key={p.id} position={[p.latitude, p.longitude]}>
-          <Popup>
-            Checkpoint #{i + 1}
-            <br />
-            Lat: {p.latitude}
-            <br />
-            Lng: {p.longitude}
-          </Popup>
-        </Marker>
-      ))}
+        <AnimatedMarker position={posicaoAtual} entregador={entregador} />
 
-      {rotaCoords.length >= 2 && (
-        <Polyline positions={rotaCoords} color="blue" />
-      )}
+        {pontosRota.map((p, i) => (
+          <Marker key={p.id} position={[p.latitude, p.longitude]}>
+            <Popup>
+              Checkpoint #{i + 1}
+              <br />
+              Lat: {p.latitude}
+              <br />
+              Lng: {p.longitude}
+            </Popup>
+          </Marker>
+        ))}
 
-      {verdeCoords.length >= 2 && (
-        <Polyline positions={verdeCoords} color="green" />
-      )}
-    </MapContainer>
+        {rotaCoords.length >= 2 && (
+          <Polyline positions={rotaCoords} color="blue" />
+        )}
+
+        {verdeCoords.length >= 2 && (
+          <Polyline positions={verdeCoords} color="green" />
+        )}
+      </MapContainer>
+    </>
   );
 }
 

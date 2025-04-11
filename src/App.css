@@ -10,3 +10,21 @@ body,
   height: 100%;
   width: 100%;
 }
+
+.nova-entrega {
+  position: absolute;
+  top: 80px;
+  left: 10px;
+  z-index: 1000;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.nova-entrega:hover {
+  background-color: #0056b3;
+}
